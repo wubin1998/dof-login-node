@@ -1,0 +1,19 @@
+{
+  "name": "doflogin",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "build": "pkg main.js -t node18-win-x64 -o DOF登录器.exe --icon ./DNF.ico"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "big-integer": "^1.6.52",
+    "crypto": "^1.0.1",
+    "mysql2": "^3.22.0",
+    "readline": "^1.3.0"
+  }
+}
