@@ -12,9 +12,6 @@ dist/
 # Generated icon renders (recreate with client/icon/build-icon.ps1)
 client/icon/icon-*.png
 
-# Unused old public key
-legacy-node/publickey.pem
-
 # OS / editor files
 Thumbs.db
 .DS_Store

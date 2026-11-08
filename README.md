@@ -112,7 +112,7 @@ cd client-native
 go test ./...
 ```
 
-测试会把 Go 生成的 RSA 登录凭证与旧版 Node 实现的输出逐字节比对，并校验 MD5 算法。构建脚本会自动用 Go 1.20.14 运行测试。
+测试会把 Go 生成的 RSA 登录凭证与旧版 Node 实现的输出逐字节比对，并校验 MD5 算法。构建脚本会自动用 Go 1.20.14 运行测试。测试还会校验根目录的 `publickey.pem` 与代码中内嵌的私钥是否匹配。
 
 ## WebView2 版（可选）
 
@@ -132,6 +132,9 @@ cd client
 ## 项目结构
 
 ```
+publickey.pem        服务端校验登录凭证用的公钥（提交到仓库）
+privatekey.pem       客户端生成登录凭证用的私钥（也内嵌在 token.go 中）
+
 client-native/      原生版（推荐，Win7 零依赖）
   main.go           程序入口、Win32 窗口、消息循环
   ui.go             UI 状态、窗口/控件、布局
@@ -140,7 +143,8 @@ client-native/      原生版（推荐，Win7 零依赖）
   win32.go          Win32 API 绑定、字体/GDI 辅助
   app.go            应用生命周期、启动 DNF.exe
   db.go             MySQL 登录 / 注册
-  token.go          RSA 凭证生成、MD5
+  token.go          RSA 凭证生成、MD5（内嵌私钥）
+  keys_test.go      校验公钥文件与内嵌私钥是否匹配
   config.go         设置与记住账号
   assets/           原生版背景图 + 生成用 HTML
   icon.ico          应用图标
@@ -167,11 +171,38 @@ dist/               构建输出（已加入 .gitignore）
 - 高 DPI：优先 `GetDpiForWindow`，Windows 7 / 8 回退到 `GetDeviceCaps`，窗口和字体按比例缩放。
 - MySQL / RSA 逻辑与旧版一致，登录凭证测试通过。
 
+## 密钥说明（重要）
+
+登录凭证使用 RSA。仓库根目录包含这对密钥：
+
+| 文件 | 用途 |
+| --- | --- |
+| `publickey.pem` | 游戏服务端校验登录凭证用的公钥 |
+| `privatekey.pem` | 客户端生成登录凭证用的私钥（同时也内嵌在 `client/token.go` 和 `client-native/token.go` 中） |
+
+这两个文件必须成对使用。`go test ./...` 会自动校验代码中内嵌的私钥与根目录 `publickey.pem` 是否匹配；如果只替换了一边，测试会失败，避免客户端和服务端密钥对不上。
+
+### 更换密钥
+
+```powershell
+node -e "const {generateKeyPairSync}=require('crypto');const fs=require('fs');const {privateKey,publicKey}=generateKeyPairSync('rsa',{modulusLength:2048,privateKeyEncoding:{type:'pkcs1',format:'pem'},publicKeyEncoding:{type:'spki',format:'pem'}});fs.writeFileSync('privatekey.pem',privateKey);fs.writeFileSync('publickey.pem',publicKey)"
+```
+
+然后：
+
+1. 把新的 `privatekey.pem` 内容替换到 `client/token.go` 和 `client-native/token.go` 的 `privateKeyPEM` 常量中（如果还要用旧版，也替换 `legacy-node/main.js` 里的私钥）。
+2. 把新的 `publickey.pem` 放到游戏服务端用于校验登录凭证的位置。
+3. 运行 `go test ./...`，确认公钥/私钥匹配。
+4. 重新构建客户端。
+
+> **开源说明**：客户端必须内置私钥才能生成登录凭证。本项目开源后，私钥就是公开的，任何拿到源码的人都可以生成登录凭证。这套机制只适合你信任的私服 / 局域网环境；如果要防止伪造，需要在服务端改为不依赖客户端内置私钥的认证方案。公开或正式服务器请更换密钥对，并同时更新服务端公钥和客户端内嵌私钥。
+
 ## 安全提醒
 
-- 数据库账号密码和 RSA 私钥仍然内置在客户端中（和旧版一致）。请勿把本项目或生成的 exe 公开发布到不受信任的地方。
+- 本项目是开源客户端，RSA 私钥和数据库密码都内置在代码 / 配置中，不能作为真正的秘密；请阅读上面的“密钥说明”。
+- 这套登录凭证机制只适合私服 / 局域网环境；公开或正式服务器请更换密钥，并评估更安全的认证方案。
 - `config.json` 中的数据库密码是明文保存的，仅适合在个人电脑 / 局域网内使用。
-- 如果服务端密码已经泄露，建议更换并重新构建客户端。
+- 如果服务端密码或密钥已经泄露，建议更换并重新构建客户端。
 - Windows 7 已停止安全更新；原生版保留兼容性，但建议尽量升级操作系统。
 
 ## 常见问题
