@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; width: 100%; height: 100%; background: transparent; overflow: hidden; }
+  svg { width: 100%; height: 100%; display: block; }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="sheet" cx="22%" cy="0%" r="120%">
+      <stop offset="0" stop-color="#262738"/>
+      <stop offset="52%" stop-color="#12131d"/>
+      <stop offset="100%" stop-color="#08090f"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="86" y1="60" x2="196" y2="198" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffe9ad"/>
+      <stop offset=".48" stop-color="#f7c65a"/>
+      <stop offset="1" stop-color="#ff7a3c"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="40" y1="24" x2="220" y2="238" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffe9ad" stop-opacity=".75"/>
+      <stop offset=".5" stop-color="#f7c65a" stop-opacity=".28"/>
+      <stop offset="1" stop-color="#ff7a3c" stop-opacity=".45"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="4" y="4" width="248" height="248" rx="58" fill="url(#sheet)" stroke="url(#rim)" stroke-width="2.5"/>
+  <path d="M128 40 200 82v92l-72 42-72-42V82l72-42Z" fill="none" stroke="url(#rim)" stroke-width="1.6" opacity=".22"/>
+  <path d="M96 64h38c34 0 56 25 56 64s-22 64-56 64H96V64Z" fill="url(#gold)"/>
+  <path d="M120 92h13c16 0 27 13 27 36s-11 36-27 36h-13V92Z" fill="#0a0b12"/>
+  <rect x="72" y="206" width="112" height="3" rx="1.5" fill="url(#gold)" opacity=".6"/>
+</svg>
+</body>
+</html>

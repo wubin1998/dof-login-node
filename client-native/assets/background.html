@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>DOF native background</title>
+<link rel="stylesheet" href="../../client/web/style.css">
+<style>
+  html, body {
+    width: 1040px !important;
+    height: 680px !important;
+    animation: none !important;
+  }
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  /* Keep layout space, hide everything we draw natively. */
+  .card,
+  .chips,
+  .brand-foot {
+    visibility: hidden !important;
+  }
+  .grain {
+    display: none !important;
+  }
+  .native-glow {
+    position: absolute;
+    left: 552px;
+    top: 46px;
+    width: 500px;
+    height: 590px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at center, rgba(247, 198, 90, 0.11) 0%, rgba(255, 122, 60, 0.05) 42%, transparent 72%);
+    filter: blur(20px);
+  }
+</style>
+</head>
+<body>
+<div class="stage" aria-hidden="true">
+  <div class="grid"></div>
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <div class="orb orb-c"></div>
+  <div class="beam"></div>
+  <div class="native-glow"></div>
+  <div class="grain"></div>
+</div>
+
+<main class="app">
+  <section class="brand">
+    <header class="brand-head">
+      <div class="mark">
+        <svg viewBox="0 0 48 48" fill="none">
+          <defs>
+            <linearGradient id="brandGrad" x1="7" y1="5" x2="42" y2="44" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#ffe9a8"/><stop offset=".55" stop-color="#f7c65a"/><stop offset="1" stop-color="#ff7a3c"/>
+            </linearGradient>
+          </defs>
+          <path d="M24 3.5 43 15v18L24 44.5 5 33V15L24 3.5Z" stroke="url(#brandGrad)" stroke-width="2"/>
+          <path d="M24 10 37.5 18.6v10.8L24 38 10.5 29.4V18.6L24 10Z" stroke="url(#brandGrad)" stroke-width=".9" opacity=".35"/>
+          <path d="M16 14.5h9.8c6.2 0 10.4 3.7 10.4 9.5s-4.2 9.5-10.4 9.5H16v-19Z" fill="url(#brandGrad)"/>
+          <path d="M22 19.6h3.7c2.7 0 4.5 1.8 4.5 4.4s-1.8 4.4-4.5 4.4H22v-8.8Z" fill="#0a0c14"/>
+        </svg>
+      </div>
+      <div class="brand-title">
+        <div class="wordmark">DOF <span>LOGIN</span></div>
+        <div class="wordmark-sub">地下城与勇士 · 登录客户端</div>
+      </div>
+    </header>
+
+    <div class="hero">
+      <div class="sigil" aria-hidden="true">
+        <div class="halo"></div>
+        <div class="ring ring-1"></div>
+        <div class="ring ring-2"></div>
+        <div class="ring-dot d1"></div>
+        <div class="ring-dot d2"></div>
+        <div class="ring-dot d3"></div>
+        <div class="core"><span>D</span></div>
+        <div class="flare f1"></div>
+        <div class="flare f2"></div>
+      </div>
+      <h1>欢迎回来，<em>勇士</em></h1>
+      <p>集结你的伙伴，重返阿拉德大陆。<br>使用账号登录，或创建一位新的冒险者。</p>
+      <div class="chips">
+        <span class="chip"><i class="dot"></i><span>192.168.200.131:3306</span></span>
+        <span class="chip ghost">v1.0.0</span>
+      </div>
+    </div>
+
+    <footer class="brand-foot">
+      <span class="net"><i></i><span>正在检测服务器…</span></span>
+      <span class="signature">DOF LOGIN CLIENT</span>
+    </footer>
+  </section>
+
+  <section class="card">
+    <div class="card-aura"></div>
+  </section>
+</main>
+</body>
+</html>

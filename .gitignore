@@ -1,0 +1,24 @@
+# Build output
+dist/
+*.exe
+*.rar
+
+# Downloaded Go toolchain
+.toolchain/
+
+# Logs
+*.log
+
+# Generated icon renders (recreate with client/icon/build-icon.ps1)
+client/icon/icon-*.png
+
+# Unused old public key
+legacy-node/publickey.pem
+
+# OS / editor files
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
+*.suo
+*.user
