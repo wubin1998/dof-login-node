@@ -9,6 +9,9 @@ dist/
 # Logs
 *.log
 
+# Key rotation backups (created by tools/generate-keys.js)
+keys-backup-*/
+
 # Generated icon renders (recreate with client/icon/build-icon.ps1)
 client/icon/icon-*.png
 

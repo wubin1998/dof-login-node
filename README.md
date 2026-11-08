@@ -156,6 +156,7 @@ client/             WebView2 版（可选）
   build.ps1         输出 DOF登录器-WebView2.exe
 
 docs/               界面截图
+tools/              密钥生成 / 同步脚本
 legacy-node/        旧版 Node.js 命令行客户端（仅保留参考）
 dist/               构建输出（已加入 .gitignore）
 .toolchain/         自动下载的 Go 1.20.14（已加入 .gitignore）
@@ -182,18 +183,102 @@ dist/               构建输出（已加入 .gitignore）
 
 这两个文件必须成对使用。`go test ./...` 会自动校验代码中内嵌的私钥与根目录 `publickey.pem` 是否匹配；如果只替换了一边，测试会失败，避免客户端和服务端密钥对不上。
 
-### 更换密钥
+> `tools/` 下的脚本只需要 Node.js，运行登录器本身不需要 Node.js。
+
+### 更换密钥（完整流程）
+
+> 客户端只会在运行时使用内嵌的私钥；服务端只使用 `publickey.pem`。两边必须来自同一对密钥。
+
+#### 1. 生成新密钥（会覆盖根目录的 key 文件）
 
 ```powershell
-node -e "const {generateKeyPairSync}=require('crypto');const fs=require('fs');const {privateKey,publicKey}=generateKeyPairSync('rsa',{modulusLength:2048,privateKeyEncoding:{type:'pkcs1',format:'pem'},publicKeyEncoding:{type:'spki',format:'pem'}});fs.writeFileSync('privatekey.pem',privateKey);fs.writeFileSync('publickey.pem',publicKey)"
+node tools\generate-keys.js
 ```
 
-然后：
+脚本会先把旧密钥备份到 `keys-backup-<时间戳>/`，然后生成：
 
-1. 把新的 `privatekey.pem` 内容替换到 `client/token.go` 和 `client-native/token.go` 的 `privateKeyPEM` 常量中（如果还要用旧版，也替换 `legacy-node/main.js` 里的私钥）。
-2. 把新的 `publickey.pem` 放到游戏服务端用于校验登录凭证的位置。
-3. 运行 `go test ./...`，确认公钥/私钥匹配。
-4. 重新构建客户端。
+- `privatekey.pem`：PKCS#1 格式（`BEGIN RSA PRIVATE KEY`）
+- `publickey.pem`：SPKI 格式（`BEGIN PUBLIC KEY`）
+
+也可以使用 OpenSSL（注意 `-traditional`，否则 OpenSSL 3 可能生成 PKCS#8）：
+
+```bash
+openssl genrsa -traditional -out privatekey.pem 2048
+openssl rsa -in privatekey.pem -pubout -out publickey.pem
+```
+
+#### 2. 同步代码里内嵌的私钥
+
+```powershell
+node tools\sync-keys.js
+```
+
+脚本会更新：
+
+- `client/token.go`
+- `client-native/token.go`
+- `legacy-node/main.js`（如果该文件存在）
+
+只检查、不修改：
+
+```powershell
+node tools\sync-keys.js --check
+```
+
+正常输出：
+
+```text
+OK: client/token.go
+OK: client-native/token.go
+OK: legacy-node/main.js
+all embedded private keys match privatekey.pem
+```
+
+#### 3. 更新服务端
+
+把新的 `publickey.pem` 放到游戏服务端用于校验登录凭证的位置，然后重启服务端。
+
+> 客户端不需要 `publickey.pem`；它使用的是代码里内嵌的私钥。服务端不需要私钥。
+
+#### 4. 运行测试
+
+```powershell
+cd client-native
+go test ./...
+
+cd ..\client
+go test ./...
+```
+
+测试会同时校验：
+
+- 代码中内嵌的私钥是否等于 `privatekey.pem`
+- `publickey.pem` 和私钥是否属于同一对密钥
+
+#### 5. 重新构建两个客户端
+
+```powershell
+cd client-native
+.\build.ps1 -Upx
+
+cd ..\client
+.\build.ps1 -Upx
+```
+
+输出：
+
+```text
+dist\DOF登录器.exe
+dist\DOF登录器-UPX.exe
+dist\DOF登录器-WebView2.exe
+dist\DOF登录器-WebView2-UPX.exe
+```
+
+#### 6. 发布新版本
+
+更换密钥后，**旧客户端无法再登录新服务端**。需要把所有客户端更新到新 exe，并在 GitHub Releases 上传新的构建产物。
+
+> **密钥格式提醒**：私钥必须是 `BEGIN RSA PRIVATE KEY`（PKCS#1），公钥必须是 `BEGIN PUBLIC KEY`（SPKI）。如果格式不正确，`tools/sync-keys.js` 会直接报错。
 
 > **开源说明**：客户端必须内置私钥才能生成登录凭证。本项目开源后，私钥就是公开的，任何拿到源码的人都可以生成登录凭证。这套机制只适合你信任的私服 / 局域网环境；如果要防止伪造，需要在服务端改为不依赖客户端内置私钥的认证方案。公开或正式服务器请更换密钥对，并同时更新服务端公钥和客户端内嵌私钥。
 
